@@ -342,6 +342,18 @@
       opacity: 1;
     }
     
+    /* Restart button */
+    .btn-restart {
+      background-color: #805ad5; /* Purple */
+      color: white;
+    }
+    
+    /* Continue writing button */
+    .btn-continue {
+      background-color: #3182ce; /* Blue */
+      color: white;
+    }
+    
     /* Responsiveness */
     @media (max-width: 768px) {
       .container {
@@ -363,6 +375,11 @@
       
       .buttons-row {
         flex-direction: column;
+      }
+      
+      .theme-toggle {
+        top: 0.5rem;
+        right: 0.5rem;
       }
     }
   </style>
@@ -409,6 +426,8 @@
           <div class="buttons-row">
             <button id="save-btn" class="action-btn btn-save">Save</button>
             <button id="copy-btn" class="action-btn btn-copy">Copy to Clipboard</button>
+            <button id="continue-btn" class="action-btn btn-continue">Continue Writing</button>
+            <button id="restart-btn" class="action-btn btn-restart">New Session</button>
             <button id="back-btn" class="action-btn btn-back">Back to Start</button>
           </div>
           
@@ -429,6 +448,8 @@
     const sessionTitle = document.getElementById('session-title');
     const saveBtn = document.getElementById('save-btn');
     const copyBtn = document.getElementById('copy-btn');
+    const continueBtn = document.getElementById('continue-btn');
+    const restartBtn = document.getElementById('restart-btn');
     const backBtn = document.getElementById('back-btn');
     const feedbackElement = document.getElementById('feedback');
     const sessionsContainer = document.getElementById('sessions-container');
@@ -441,6 +462,7 @@
     let isSessionComplete = false;
     let lastKeyPressTime = 0;
     let isDarkMode = false;
+    let baseText = ''; // Store the text from previous session
     const inactivityTimeout = 5000; // 5 seconds
     
     // Initialize the app
@@ -466,6 +488,8 @@
       // Session control buttons
       saveBtn.addEventListener('click', saveSession);
       copyBtn.addEventListener('click', copyToClipboard);
+      continueBtn.addEventListener('click', continueWriting);
+      restartBtn.addEventListener('click', restartSession);
       backBtn.addEventListener('click', returnToStart);
       
       // Theme toggle
@@ -477,6 +501,7 @@
       // Reset state
       isSessionComplete = false;
       writingArea.value = '';
+      baseText = ''; // Reset base text for fresh sessions
       sessionTitle.value = '';
       writingControls.classList.remove('active');
       feedbackElement.classList.remove('success');
@@ -526,8 +551,8 @@
       const timeSinceLastKeypress = currentTime - lastKeyPressTime;
       
       if (timeSinceLastKeypress >= inactivityTimeout) {
-        // Clear text if inactive for 5 seconds
-        writingArea.value = '';
+        // Return to base text when inactive for 5 seconds
+        writingArea.value = baseText;
       } else {
         // Continue checking
         typingTimer = setTimeout(checkInactivity, 1000);
@@ -539,6 +564,9 @@
       clearInterval(timer);
       clearTimeout(typingTimer);
       isSessionComplete = true;
+      
+      // Save the current text as the base text for potential continuation
+      baseText = writingArea.value;
       
       // Show controls for saving/exporting
       writingControls.classList.add('active');
@@ -726,6 +754,84 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+    }
+    
+    // Continue writing with the existing text but restart timer
+    function continueWriting() {
+      // Clear timer and reset session state
+      clearInterval(timer);
+      clearTimeout(typingTimer);
+      isSessionComplete = false;
+      
+      // Keep the existing text (already in writingArea.value)
+      // Hide controls
+      writingControls.classList.remove('active');
+      feedbackElement.classList.remove('success');
+      feedbackElement.style.display = 'none';
+      
+      // Reset and start the timer with the same duration
+      timeLeft = selectedMinutes * 60;
+      updateTimerDisplay();
+      
+      // Start countdown again
+      timer = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        
+        if (timeLeft <= 0) {
+          endSession();
+        }
+      }, 1000);
+      
+      // Focus on writing area
+      writingArea.focus();
+      
+      // Provide feedback
+      showFeedback(`Timer restarted for ${selectedMinutes} more minutes!`, true);
+    }
+    
+    // Restart the writing session with the same timer duration but clear text
+    function restartSession() {
+      // Check if user wants to save before restarting
+      const hasText = writingArea.value.trim().length > 0;
+      
+      if (hasText) {
+        const confirmRestart = confirm('Do you want to save your work before restarting?');
+        if (confirmRestart) {
+          saveSession();
+        }
+      }
+      
+      // Clear and reset
+      clearInterval(timer);
+      clearTimeout(typingTimer);
+      isSessionComplete = false;
+      writingArea.value = '';
+      baseText = ''; // Reset base text for a completely fresh start
+      sessionTitle.value = '';
+      writingControls.classList.remove('active');
+      feedbackElement.classList.remove('success');
+      feedbackElement.style.display = 'none';
+      
+      // Reset and start the timer with the same duration
+      timeLeft = selectedMinutes * 60;
+      updateTimerDisplay();
+      
+      // Start countdown again
+      timer = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        
+        if (timeLeft <= 0) {
+          endSession();
+        }
+      }, 1000);
+      
+      // Focus on writing area
+      writingArea.focus();
+      
+      // Provide feedback
+      showFeedback(`Started a new ${selectedMinutes}-minute session!`, true);
     }
     
     // Toggle between light and dark theme
