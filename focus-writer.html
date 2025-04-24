@@ -12,6 +12,17 @@
       --text-color: #2d3748;
       --border-color: #e2e8f0;
       --success-color: #48bb78;
+      
+      --component-background: white;
+      
+      /* Night mode colors */
+      --primary-color-dark: #a0aec0;
+      --background-color-dark: #1a202c;
+      --accent-color-dark: #a0aec0;
+      --text-color-dark: #e2e8f0;
+      --border-color-dark: #2d3748;
+      --success-color-dark: #68d391;
+      --component-background-dark: #2d3748;
     }
     
     * {
@@ -28,7 +39,17 @@
       height: 100vh;
       display: flex;
       flex-direction: column;
-      transition: background-color 0.3s ease;
+      transition: all 0.3s ease;
+    }
+    
+    body.dark-mode {
+      --primary-color: var(--primary-color-dark);
+      --background-color: var(--background-color-dark);
+      --accent-color: var(--accent-color-dark);
+      --text-color: var(--text-color-dark);
+      --border-color: var(--border-color-dark);
+      --success-color: var(--success-color-dark);
+      --component-background: var(--component-background-dark);
     }
     
     .container {
@@ -71,7 +92,7 @@
     .time-btn {
       padding: 1rem 1.5rem;
       border: 1px solid var(--border-color);
-      background-color: white;
+      background-color: var(--component-background);
       color: var(--primary-color);
       border-radius: 8px;
       font-size: 1rem;
@@ -103,7 +124,7 @@
       list-style: none;
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      background-color: white;
+      background-color: var(--component-background);
       max-height: 300px;
       overflow-y: auto;
     }
@@ -174,11 +195,11 @@
       font-size: 1.1rem;
       line-height: 1.6;
       resize: none;
-      background-color: white;
+      background-color: var(--component-background);
       color: var(--text-color);
       outline: none;
       margin-bottom: 1rem;
-      transition: border-color 0.3s ease;
+      transition: all 0.3s ease;
     }
     
     #writing-area:focus {
@@ -202,6 +223,9 @@
       border-radius: 8px;
       font-size: 1rem;
       outline: none;
+      background-color: var(--component-background);
+      color: var(--text-color);
+      transition: all 0.3s ease;
     }
     
     .title-input:focus {
@@ -229,7 +253,7 @@
     }
     
     .btn-copy {
-      background-color: white;
+      background-color: var(--component-background);
       border: 1px solid var(--border-color);
       color: var(--primary-color);
     }
@@ -260,9 +284,62 @@
       text-align: center;
       padding: 2rem;
       color: var(--accent-color);
-      background-color: white;
+      background-color: var(--component-background);
       border: 1px solid var(--border-color);
       border-radius: 8px;
+    }
+    
+    /* Night mode toggle */
+    .theme-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 50px;
+      height: 26px;
+      border-radius: 13px;
+      background-color: var(--accent-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 0 3px;
+      transition: all 0.3s ease;
+    }
+    
+    .theme-toggle-handle {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: white;
+      transition: transform 0.3s ease;
+    }
+    
+    .dark-mode .theme-toggle-handle {
+      transform: translateX(24px);
+    }
+    
+    .theme-toggle-icon {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      transition: opacity 0.3s ease;
+    }
+    
+    .theme-toggle-icon.sun {
+      left: 5px;
+      opacity: 1;
+    }
+    
+    .theme-toggle-icon.moon {
+      right: 5px;
+      opacity: 0;
+    }
+    
+    .dark-mode .theme-toggle-icon.sun {
+      opacity: 0;
+    }
+    
+    .dark-mode .theme-toggle-icon.moon {
+      opacity: 1;
     }
     
     /* Responsiveness */
@@ -291,6 +368,11 @@
   </style>
 </head>
 <body>
+  <div class="theme-toggle" id="theme-toggle">
+    <div class="theme-toggle-handle"></div>
+    <div class="theme-toggle-icon sun">☀️</div>
+    <div class="theme-toggle-icon moon">🌙</div>
+  </div>
   <div class="container">
     <h1>Focus Writer</h1>
     
@@ -358,12 +440,14 @@
     let typingTimer = null;
     let isSessionComplete = false;
     let lastKeyPressTime = 0;
+    let isDarkMode = false;
     const inactivityTimeout = 5000; // 5 seconds
     
     // Initialize the app
     function init() {
       loadSavedSessions();
       setupEventListeners();
+      loadThemePreference();
     }
     
     // Set up event listeners
@@ -383,6 +467,9 @@
       saveBtn.addEventListener('click', saveSession);
       copyBtn.addEventListener('click', copyToClipboard);
       backBtn.addEventListener('click', returnToStart);
+      
+      // Theme toggle
+      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
     }
     
     // Start a writing session
@@ -639,6 +726,33 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+    }
+    
+    // Toggle between light and dark theme
+    function toggleTheme() {
+      isDarkMode = !isDarkMode;
+      
+      if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+      } else {
+        document.body.classList.remove('dark-mode');
+      }
+      
+      // Save preference
+      localStorage.setItem('focusWriterDarkMode', isDarkMode);
+    }
+    
+    // Load theme preference from localStorage
+    function loadThemePreference() {
+      const savedDarkMode = localStorage.getItem('focusWriterDarkMode');
+      
+      if (savedDarkMode === 'true') {
+        isDarkMode = true;
+        document.body.classList.add('dark-mode');
+      } else {
+        isDarkMode = false;
+        document.body.classList.remove('dark-mode');
+      }
     }
     
     // Initialize the app
