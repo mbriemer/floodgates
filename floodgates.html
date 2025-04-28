@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Focus Writer</title>
+  <title>Floodgates</title>
   <style>
     :root {
       --primary-color: #4a5568;
@@ -391,7 +391,7 @@
     <div class="theme-toggle-icon moon">🌙</div>
   </div>
   <div class="container">
-    <h1>Focus Writer</h1>
+    <h1>Floodgates</h1>
     
     <!-- Start Screen -->
     <div id="start-screen" class="screen active">
@@ -600,13 +600,13 @@
       };
       
       // Get existing sessions
-      const sessions = JSON.parse(localStorage.getItem('focusWriterSessions') || '[]');
+      const sessions = JSON.parse(localStorage.getItem('floodgatesSessions') || '[]');
       
       // Add new session
       sessions.push(session);
       
       // Save to localStorage
-      localStorage.setItem('focusWriterSessions', JSON.stringify(sessions));
+      localStorage.setItem('floodgatesSessions', JSON.stringify(sessions));
       
       // Show feedback
       showFeedback("Session saved successfully!", true);
@@ -661,7 +661,7 @@
     
     // Load saved sessions from localStorage
     function loadSavedSessions() {
-      const sessions = JSON.parse(localStorage.getItem('focusWriterSessions') || '[]');
+      const sessions = JSON.parse(localStorage.getItem('floodgatesSessions') || '[]');
       
       if (sessions.length === 0) {
         sessionsContainer.innerHTML = '<div class="no-sessions">No saved sessions yet</div>';
@@ -712,7 +712,7 @@
     
     // View a saved session
     function viewSession(id) {
-      const sessions = JSON.parse(localStorage.getItem('focusWriterSessions') || '[]');
+      const sessions = JSON.parse(localStorage.getItem('floodgatesSessions') || '[]');
       const session = sessions.find(s => s.id == id);
       
       if (!session) return;
@@ -736,10 +736,10 @@
     function deleteSession(id) {
       if (!confirm('Are you sure you want to delete this session?')) return;
       
-      let sessions = JSON.parse(localStorage.getItem('focusWriterSessions') || '[]');
+      let sessions = JSON.parse(localStorage.getItem('floodgatesSessions') || '[]');
       sessions = sessions.filter(s => s.id != id);
       
-      localStorage.setItem('focusWriterSessions', JSON.stringify(sessions));
+      localStorage.setItem('floodgatesSessions', JSON.stringify(sessions));
       
       // Reload the sessions list
       loadSavedSessions();
@@ -844,12 +844,12 @@
       }
       
       // Save preference
-      localStorage.setItem('focusWriterDarkMode', isDarkMode);
+      localStorage.setItem('floodgatesDarkMode', isDarkMode);
     }
     
     // Load theme preference from localStorage
     function loadThemePreference() {
-      const savedDarkMode = localStorage.getItem('focusWriterDarkMode');
+      const savedDarkMode = localStorage.getItem('floodgatesDarkMode');
       
       if (savedDarkMode === 'true') {
         isDarkMode = true;
